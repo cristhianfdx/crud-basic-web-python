@@ -1,6 +1,6 @@
 <template>
   <v-app id="inspire">
-    <v-data-table :headers="headers" :items="employes" sort-by="last_name" class="elevation-1">
+    <v-data-table :headers="headers" :items="employees" sort-by="last_name" class="elevation-1">
       <template v-slot:top>
         <v-toolbar flat color="white">
           <v-toolbar-title>CRUD</v-toolbar-title>
@@ -60,7 +60,11 @@
                       <v-text-field v-model="editedItem.mobile_number" label="Número telefónico"></v-text-field>
                     </v-col>
                     <v-col cols="12" sm="6" md="4">
-                      <v-text-field v-model="editedItem.gender" label="Género"></v-text-field>
+                      <v-combobox
+                              v-model="editedItem.gender"
+                              :items="genders"
+                              label="Seleccione género"
+                      ></v-combobox>
                     </v-col>
                   </v-row>
                 </v-container>
@@ -98,6 +102,7 @@ export default {
     minDate: "1960-01-01",
     maxDate: `${new Date().getFullYear()}-${new Date().getMonth()}-${new Date().getDate()}`,
     dialog: false,
+    genders :[ 'M', 'F', 'OTRO' ],
     headers: [
       {
         text: "Nombres",
@@ -112,11 +117,12 @@ export default {
       { text: "Género", value: "gender" },
       { text: "Acciones", value: "actions", sortable: false }
     ],
-    employes: [],
+    employees: [],
     editedIndex: -1,
     editedItem: {
       first_name: "",
       last_name: "",
+      document_number: "",
       birth_date: null,
       mobile_number: "",
       gender: ""
@@ -124,6 +130,7 @@ export default {
     defaultItem: {
       first_name: "",
       last_name: "",
+      document_number: "",
       birth_date: null,
       mobile_number: "",
       gender: ""
@@ -157,18 +164,18 @@ export default {
     getItems() {
       axios.get(URI)
         .then(response => {
-          this.employes = response.data;
+          this.employees = response.data;
         });
     },
 
     editItem(item) {
-      this.editedIndex = this.employes.indexOf(item);
+      this.editedIndex = this.employees.indexOf(item);
       this.editedItem = Object.assign({}, item);
       this.dialog = true;
     },
 
     deleteItem(item) {
-      const index = this.employes.indexOf(item);
+      const index = this.employees.indexOf(item);
       const { id } = item
 
       Swal.fire({
@@ -184,7 +191,7 @@ export default {
           axios.delete(`${URI}/${id}`)
           .then(response => {
             if (response.status === 200 || response.status === 204){
-              this.employes.splice(index, 1);
+              this.employees.splice(index, 1);
               this.getItems();
               Swal.fire("¡Borrado!", "El empleado ha sido eliminado.", "success");
             }
@@ -216,7 +223,7 @@ export default {
         axios.post(`${URI}/`, this.editedItem)
         .then(response => {
           if (response.status === 201){
-            this.employes.push(this.editedItem);
+            this.employees.push(this.editedItem);
             this.getItems();
           }
         })
