@@ -1,4 +1,4 @@
 venv
 .vscode
 .idea
-client/node_modules
+frontend/node_modules

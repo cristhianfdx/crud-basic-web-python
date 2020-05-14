@@ -8,7 +8,7 @@ class Employee(models.Model):
     document_number = models.CharField(max_length=20, unique=True)
     birth_date = models.DateField(null=True)
     mobile_number = models.CharField(max_length=40, unique=True)
-    avatar = models.CharField(max_length=250)
+    gender = models.CharField(max_length=5)
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
 
