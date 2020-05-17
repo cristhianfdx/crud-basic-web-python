@@ -29,7 +29,7 @@
                     <template v-slot:top>
                         <v-toolbar flat color="white">
                             <v-spacer class="mx-4" inset vertical></v-spacer>
-                            <v-dialog v-model="dialog" max-width="600px">
+                            <v-dialog v-model="dialog" max-width="500px">
                                 <template v-slot:activator="{ on }">
                                     <v-btn color="primary" dark class="mb-2" v-on="on">Nuevo Empleado</v-btn>
                                 </template>
@@ -39,21 +39,26 @@
                                     </v-card-title>
 
                                     <v-card-text>
-                                        <v-container>
-                                            <v-row>
-                                                <v-col cols="12" sm="6" md="4">
+                                        <v-form
+                                                ref="form"
+                                                v-model="valid"
+                                                :lazy-validation="true">
+                                            <v-container>
+                                                <v-col cols="11" class="mx-auto">
                                                     <v-text-field v-model="editedItem.first_name"
-                                                                  label="Nombres"></v-text-field>
-                                                </v-col>
-                                                <v-col cols="12" sm="6" md="4">
+                                                                  required
+                                                                  :counter="50"
+                                                                  :rules="formRules.firstNameRules"
+                                                                  label="Nombres">
+                                                    </v-text-field>
                                                     <v-text-field v-model="editedItem.last_name"
-                                                                  label="Apellidos"></v-text-field>
-                                                </v-col>
-                                                <v-col cols="12" sm="6" md="4">
+                                                                  :counter="50"
+                                                                  :rules="formRules.lastNameRules"
+                                                                  label="Apellidos">
+                                                    </v-text-field>
                                                     <v-text-field v-model="editedItem.document_number"
-                                                                  label="Número de documento"></v-text-field>
-                                                </v-col>
-                                                <v-col cols="12" sm="6" md="4">
+                                                                  label="Número de documento">
+                                                    </v-text-field>
                                                     <v-menu
                                                             v-model="fromDateMenu"
                                                             :close-on-content-click="false"
@@ -81,26 +86,24 @@
                                                                 :max="maxDate"
                                                         ></v-date-picker>
                                                     </v-menu>
-                                                </v-col>
-                                                <v-col cols="12" sm="6" md="4">
                                                     <v-text-field v-model="editedItem.mobile_number"
                                                                   label="Número telefónico"></v-text-field>
-                                                </v-col>
-                                                <v-col cols="12" sm="6" md="4">
                                                     <v-combobox
                                                             v-model="editedItem.gender"
                                                             :items="genders"
                                                             label="Seleccione género"
                                                     ></v-combobox>
                                                 </v-col>
-                                            </v-row>
-                                        </v-container>
+                                            </v-container>
+                                        </v-form>
                                     </v-card-text>
 
                                     <v-card-actions>
                                         <v-spacer></v-spacer>
-                                        <v-btn color="red darken-1" text @click="close">Cancelar</v-btn>
-                                        <v-btn color="green darken-1" text @click="save">Guardar</v-btn>
+                                        <v-btn color="red darken-1" text @click="close" type="button">Cancelar</v-btn>
+                                        <v-btn color="green darken-1" text type="submit" :disabled="!valid">
+                                            Guardar
+                                        </v-btn>
                                     </v-card-actions>
                                 </v-card>
                             </v-dialog>
@@ -126,6 +129,7 @@
 
     export default {
         data: () => ({
+            valid: true,
             search: '',
             fromDateMenu: false,
             fromDateVal: null,
@@ -159,6 +163,16 @@
                 birth_date: null,
                 mobile_number: "",
                 gender: ""
+            },
+            formRules: {
+                firstNameRules: [
+                    v => !!v || 'Nombres es requerido.',
+                    v => (v && v.length <= 50) || 'Nombres no puede tener más de 50 carácteres',
+                ],
+                lastNameRules: [
+                    v => !!v || 'Apellidos es requerido.',
+                    v => (v && v.length <= 50) || 'Apellidos no puede tener más de 50 carácteres',
+                ]
             }
         }),
 
@@ -266,7 +280,7 @@
         font-family: "Roboto", "Lucida Grande", "DejaVu Sans", "Bitstream Vera Sans", Verdana, Arial, sans-serif;
     }
 
-    body {
+    #app {
         background: #f2fcfe;
     }
 </style>
