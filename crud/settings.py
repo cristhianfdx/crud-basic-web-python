@@ -15,7 +15,6 @@ import os
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.0/howto/deployment/checklist/
 
@@ -27,10 +26,9 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
-
 # Application definition
 
-DJANGO_APPS  = [
+DJANGO_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -81,17 +79,16 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'crud.wsgi.application'
 
-
 # Database
 # https://docs.djangoproject.com/en/3.0/ref/settings/#databases
 
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'employees',
-        'USER': 'c3VwZXJ1c2Vy',
-        'PASSWORD': 'cGFzc3dvcmRzZWNyZXQ=',
-        'HOST': 'localhost'
+        'NAME': 'dcc124qri95gkq',
+        'USER': 'foqfsiwppdkqgm',
+        'PASSWORD': '3f4431d6caa9014176bb46e2d8afabf03b4b25fccdb9697eb6c47ba99a23cbeb',
+        'HOST': 'ec2-54-197-48-79.compute-1.amazonaws.com'
     }
 }
 
@@ -113,7 +110,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Internationalization
 # https://docs.djangoproject.com/en/3.0/topics/i18n/
 
@@ -128,7 +124,6 @@ USE_I18N = True
 USE_L10N = True
 
 USE_TZ = True
-
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.0/howto/static-files/
