@@ -42,7 +42,7 @@
                                         <v-form
                                                 ref="form"
                                                 v-model="valid"
-                                                :lazy-validation="true">
+                                                :lazy-validation="lazy">
                                             <v-container>
                                                 <v-col cols="11" class="mx-auto">
                                                     <v-text-field v-model="editedItem.first_name"
@@ -88,10 +88,17 @@
                                                     </v-menu>
                                                     <v-text-field v-model="editedItem.mobile_number"
                                                                   label="Número telefónico"></v-text-field>
+                                                    <v-text-field v-model="editedItem.email"
+                                                                  label="Correo electrónico"></v-text-field>
                                                     <v-combobox
                                                             v-model="editedItem.gender"
                                                             :items="genders"
                                                             label="Seleccione género"
+                                                    ></v-combobox>
+                                                    <v-combobox
+                                                            v-model="editedItem.department"
+                                                            :items="departments"
+                                                            label="Seleccione departamento"
                                                     ></v-combobox>
                                                 </v-col>
                                             </v-container>
@@ -101,7 +108,7 @@
                                     <v-card-actions>
                                         <v-spacer></v-spacer>
                                         <v-btn color="red darken-1" text @click="close" type="button">Cancelar</v-btn>
-                                        <v-btn color="green darken-1" text type="submit" :disabled="!valid">
+                                        <v-btn color="green darken-1" text @click="save" :disabled="!valid">
                                             Guardar
                                         </v-btn>
                                     </v-card-actions>
@@ -123,13 +130,16 @@
 </template>
 
 <script>
-    const URI = "/api/employee";
     import Swal from "sweetalert2";
-    import axios from 'axios';
+    import $axios from 'axios';
+
+    const EMPLOYEE_URI = "/api/employee";
+    const DEPARTMENT_URI = "/api/department";
 
     export default {
         data: () => ({
-            valid: true,
+            valid: false,
+            lazy: true,
             search: '',
             fromDateMenu: false,
             fromDateVal: null,
@@ -143,6 +153,8 @@
                 {text: "Número de documento", value: "document_number", sortable: false},
                 {text: "Fecha de nacimiento", value: "birth_date", sortable: false},
                 {text: "Número telefónico", value: "mobile_number", sortable: false},
+                {text: "Email", value: "email", sortable: false},
+                {text: "Departamento", value: "department", sortable: false},
                 {text: "Género", value: "gender", sortable: false},
                 {text: "Acciones", value: "actions", sortable: false}
             ],
@@ -154,7 +166,9 @@
                 document_number: "",
                 birth_date: null,
                 mobile_number: "",
-                gender: ""
+                email: '',
+                gender: "",
+                department: ''
             },
             defaultItem: {
                 first_name: "",
@@ -162,8 +176,11 @@
                 document_number: "",
                 birth_date: null,
                 mobile_number: "",
-                gender: ""
+                email: '',
+                gender: "",
+                department: '',
             },
+            departments: [],
             formRules: {
                 firstNameRules: [
                     v => !!v || 'Nombres es requerido.',
@@ -198,10 +215,11 @@
         methods: {
             initialize() {
                 this.getItems();
+                this.getDepartments();
             },
 
             getItems() {
-                axios.get(URI)
+                $axios.get(EMPLOYEE_URI)
                     .then(response => {
                         this.employees = response.data;
                     });
@@ -215,7 +233,7 @@
 
             deleteItem(item) {
                 const index = this.employees.indexOf(item);
-                const {id} = item
+                const {id} = item;
 
                 Swal.fire({
                     title: "¿Esta segur@?",
@@ -227,7 +245,7 @@
                     confirmButtonText: "¡Si, borrar!"
                 }).then(result => {
                     if (result.value) {
-                        axios.delete(`${URI}/${id}`)
+                        $axios.delete(`${EMPLOYEE_URI}/${id}`)
                             .then(response => {
                                 if (response.status === 200 || response.status === 204) {
                                     this.employees.splice(index, 1);
@@ -240,8 +258,19 @@
                 });
             },
 
+            getDepartments() {
+                $axios.get(DEPARTMENT_URI)
+                    .then(response => {
+                        this.departments = response.data.map(val => {
+                            return {text: val.name, value: val.id}
+                        });
+                    });
+            },
+
             close() {
                 this.dialog = false;
+                this.$refs.form.reset();
+                this.$refs.form.resetValidation();
                 this.$nextTick(() => {
                     this.editedItem = Object.assign({}, this.defaultItem);
                     this.editedIndex = -1;
@@ -249,27 +278,32 @@
             },
 
             save() {
-                if (this.editedIndex > -1) {
-                    const {id} = this.editedItem;
-                    axios.put(`${URI}/${id}/`, this.editedItem)
-                        .then(response => {
-                            if (response.status === 201 || response.status === 200) {
-                                this.getItems();
-                            }
-                        })
-                        .catch(err => console.log(err));
+                if (this.valid) {
+                    if (this.editedIndex > -1) {
+                        const {id} = this.editedItem;
+                        $axios.put(`${EMPLOYEE_URI}/${id}/`, this.editedItem)
+                            .then(response => {
+                                if (response.status === 201 || response.status === 200) {
+                                    this.getItems();
+                                }
+                            })
+                            .catch(err => console.log(err));
+                    } else {
+                        $axios.post(`${EMPLOYEE_URI}/`, this.editedItem)
+                            .then(response => {
+                                if (response.status === 201) {
+                                    this.employees.push(this.editedItem);
+                                    this.getItems();
+                                }
+                            })
+                            .catch(err => console.log(err));
+                    }
+                    this.close();
                 } else {
-                    axios.post(`${URI}/`, this.editedItem)
-                        .then(response => {
-                            if (response.status === 201) {
-                                this.employees.push(this.editedItem);
-                                this.getItems();
-                            }
-                        })
-                        .catch(err => console.log(err));
+                    this.$refs.form.validate();
                 }
 
-                this.close();
+
             }
         }
     };
