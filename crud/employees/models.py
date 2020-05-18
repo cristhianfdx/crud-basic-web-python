@@ -1,17 +1,16 @@
-"""Employee Model."""
+"""Models."""
 
 from django.db import models
 
 
-class Departament(models.Model):
-    code = models.CharField(max_length=20)
+class Department(models.Model):
     name = models.CharField(max_length=100)
 
     class Meta:
-        db_table = 'departament'
+        db_table = 'department'
 
     def __str__(self):
-        return self.code
+        return self.name
 
 
 class Employee(models.Model):
@@ -20,9 +19,9 @@ class Employee(models.Model):
     document_number = models.CharField(max_length=20, unique=True)
     birth_date = models.DateField(null=True)
     mobile_number = models.CharField(max_length=40, unique=True)
-    email = models.CharField(max_length=100)
+    email = models.CharField(max_length=100, unique=True)
     gender = models.CharField(max_length=5)
-    departament = models.ForeignKey(Departament, on_delete=models.CASCADE)
+    department = models.ForeignKey(Department, on_delete=models.CASCADE, related_name='departments')
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
 
