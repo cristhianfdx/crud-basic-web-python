@@ -8,16 +8,12 @@ from .models import Employee, Department
 class DepartmentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Department
-        fields = '__all__'
+        fields = ['id', 'name']
 
 
 class EmployeeSerializer(serializers.ModelSerializer):
-
-    department = DepartmentSerializer()
-
     class Meta:
         model = Employee
-
         fields = (
             'id',
             'first_name',
@@ -29,3 +25,4 @@ class EmployeeSerializer(serializers.ModelSerializer):
             'gender',
             'department'
         )
+        depth = 1

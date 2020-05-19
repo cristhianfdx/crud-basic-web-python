@@ -214,14 +214,20 @@
 
         methods: {
             initialize() {
-                this.getItems();
                 this.getDepartments();
+                this.getItems();
             },
 
             getItems() {
                 $axios.get(EMPLOYEE_URI)
                     .then(response => {
-                        this.employees = response.data;
+                        this.employees = response.data.map(value => {
+                            let temp = value.department;
+                            value.department = this.departments.map(x => {
+                                if (x.value === temp) return x.text;
+                            });
+                            return value;
+                        });
                     });
             },
 
