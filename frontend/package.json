@@ -29,6 +29,7 @@
   },
   "dependencies": {
     "axios": "^0.19.2",
+    "moment": "^2.25.3",
     "sweetalert2": "^9.10.13",
     "vuetify": "^2.2.28"
   }

@@ -29,9 +29,11 @@
                     <template v-slot:top>
                         <v-toolbar flat color="white">
                             <v-spacer class="mx-4" inset vertical></v-spacer>
-                            <v-dialog v-model="dialog" max-width="500px">
+                            <v-dialog v-model="dialog" max-width="500px" persistent>
                                 <template v-slot:activator="{ on }">
-                                    <v-btn color="primary" dark class="mb-2" v-on="on">Nuevo Empleado</v-btn>
+                                    <v-btn color="primary" dark class="mb-2" v-on="on">
+                                        Nuevo Empleado
+                                    </v-btn>
                                 </template>
                                 <v-card>
                                     <v-card-title>
@@ -39,11 +41,12 @@
                                     </v-card-title>
 
                                     <v-card-text>
-                                        <v-form
-                                                ref="form"
-                                                v-model="valid"
-                                                :lazy-validation="lazy">
-                                            <v-container>
+                                        <v-container>
+                                            <v-form
+                                                    ref="form"
+                                                    v-model="valid"
+                                                    @submit.prevent="save"
+                                                    :lazy-validation="lazy">
                                                 <v-col cols="11" class="mx-auto">
                                                     <v-text-field v-model="editedItem.first_name"
                                                                   required
@@ -57,6 +60,8 @@
                                                                   label="Apellidos">
                                                     </v-text-field>
                                                     <v-text-field v-model="editedItem.document_number"
+                                                                  :counter="14"
+                                                                  :rules="formRules.documentNumberRules"
                                                                   label="Número de documento">
                                                     </v-text-field>
                                                     <v-menu
@@ -71,7 +76,8 @@
                                                         <template v-slot:activator="{ on }">
                                                             <v-text-field
                                                                     label="Fecha de nacimiento"
-                                                                    prepend-icon="event"
+                                                                    prepend-inner-icon="event"
+                                                                    :rules="formRules.birthDateRules"
                                                                     readonly
                                                                     :value="editedItem.birth_date"
                                                                     v-on="on"
@@ -81,37 +87,43 @@
                                                                 locale="es-ES"
                                                                 v-model="editedItem.birth_date"
                                                                 no-title
+                                                                :reactive="true"
                                                                 @input="fromDateMenu = false"
                                                                 :min="minDate"
                                                                 :max="maxDate"
                                                         ></v-date-picker>
                                                     </v-menu>
                                                     <v-text-field v-model="editedItem.mobile_number"
+                                                                  prepend-inner-icon="phone"
+                                                                  :counter="10"
+                                                                  :rules="formRules.phoneNumberRules"
                                                                   label="Número telefónico"></v-text-field>
                                                     <v-text-field v-model="editedItem.email"
+                                                                  :rules="formRules.emailRules"
                                                                   label="Correo electrónico"></v-text-field>
                                                     <v-combobox
                                                             v-model="editedItem.gender"
                                                             :items="genders"
+                                                            :rules="formRules.genderRules"
                                                             label="Seleccione género"
                                                     ></v-combobox>
                                                     <v-combobox
                                                             v-model="editedItem.department"
                                                             :items="departments"
-                                                            label="Seleccione departamento"
+                                                            :rules="formRules.departmentRules"
+                                                            label="Seleccione Departamento"
                                                     ></v-combobox>
                                                 </v-col>
-                                            </v-container>
-                                        </v-form>
+                                                <v-card-actions>
+                                                    <v-spacer></v-spacer>
+                                                    <v-btn color="red darken-1" text @click="close">Cancelar</v-btn>
+                                                    <v-btn color="green darken-1" text type="submit" :disabled="!valid">
+                                                        Guardar
+                                                    </v-btn>
+                                                </v-card-actions>
+                                            </v-form>
+                                        </v-container>
                                     </v-card-text>
-
-                                    <v-card-actions>
-                                        <v-spacer></v-spacer>
-                                        <v-btn color="red darken-1" text @click="close" type="button">Cancelar</v-btn>
-                                        <v-btn color="green darken-1" text @click="save" :disabled="!valid">
-                                            Guardar
-                                        </v-btn>
-                                    </v-card-actions>
                                 </v-card>
                             </v-dialog>
                         </v-toolbar>
@@ -132,19 +144,22 @@
 <script>
     import Swal from "sweetalert2";
     import $axios from 'axios';
+    import moment from 'moment';
 
     const EMPLOYEE_URI = "/api/employee";
     const DEPARTMENT_URI = "/api/department";
 
+    const DATE_FORMAT = "YYYY-MM-DD";
+
     export default {
         data: () => ({
-            valid: false,
+            valid: true,
             lazy: true,
             search: '',
             fromDateMenu: false,
             fromDateVal: null,
-            minDate: "1960-01-01",
-            maxDate: `${new Date().getFullYear()}-${new Date().getMonth()}-${new Date().getDate()}`,
+            minDate: moment().subtract(50, 'y').format(DATE_FORMAT),
+            maxDate: moment().format(DATE_FORMAT),
             dialog: false,
             genders: ['M', 'F', 'OTRO'],
             headers: [
@@ -166,9 +181,9 @@
                 document_number: "",
                 birth_date: null,
                 mobile_number: "",
-                email: '',
-                gender: "",
-                department: ''
+                email: "",
+                gender: null,
+                department: null
             },
             defaultItem: {
                 first_name: "",
@@ -176,25 +191,47 @@
                 document_number: "",
                 birth_date: null,
                 mobile_number: "",
-                email: '',
-                gender: "",
-                department: '',
+                email: "",
+                gender: null,
+                department: null,
             },
             departments: [],
             formRules: {
                 firstNameRules: [
-                    v => !!v || 'Nombres es requerido.',
-                    v => (v && v.length <= 50) || 'Nombres no puede tener más de 50 carácteres',
+                    v => !!v || 'Los Nombres son obligatorios.',
+                    v => (v && v.length <= 50) || 'Los Nombres no pueden tener más de 50 carácteres.',
+                    v => /^[a-zA-Z]+(([',. -][a-zA-Z ])?[a-zA-Z]*)*$/.test(v) || 'No puede contener carácteres especiales ni números'
                 ],
                 lastNameRules: [
-                    v => !!v || 'Apellidos es requerido.',
-                    v => (v && v.length <= 50) || 'Apellidos no puede tener más de 50 carácteres',
-                ]
+                    v => !!v || 'Los Apellidos son obligatorios.',
+                    v => (v && v.length <= 50) || 'Los Apellidos no pueden tener más de 50 carácteres.',
+                    v => /^[a-zA-Z]+(([',. -][a-zA-Z ])?[a-zA-Z]*)*$/.test(v) || 'No puede contener carácteres especiales ni números'
+                ],
+                documentNumberRules: [
+                    v => !!v || 'El Número de documento es obligatorio.',
+                    v => (v && v.length <= 14) || 'El Número de documento no puede tener más de 14 carácteres.',
+                    v => /^[a-zA-Z0-9]*$/.test(v) || 'Solo puede contener carácteres alfanúmericos y sin espacios.'
+                ],
+                phoneNumberRules: [
+                    v => !!v || 'El Número telefónico es obligatorio',
+                    v => (v && v.length <= 10) || 'El Número telefónico  no puede tener más de 10 dígitos.',
+                    v => /\d$/.test(v) || 'Solo se permiten números.'
+                ],
+                birthDateRules: [
+                    v => !!v || 'La fecha de nacimiento es obligatoria',
+                    v => moment().diff(moment(v), 'years') >= 18 || 'El Empleado debe ser mayor de edad (18 años)',
+                ],
+                emailRules: [
+                    v => !!v || 'El correo electrónico es obligatorio.',
+                    v => /.+@.+\..+/.test(v) || 'Debe ingresar un correo electrónico válido.',
+                ],
+                genderRules: [v => !!v || 'El Género es obligatorio'],
+                departmentRules: [v => !!v || 'El Departamento es obligatorio']
             }
         }),
 
         computed: {
-            fromDateDisp() {
+            fromDateDisplay() {
                 return this.fromDateVal;
             },
             formTitle() {
@@ -222,10 +259,7 @@
                 $axios.get(EMPLOYEE_URI)
                     .then(response => {
                         this.employees = response.data.map(value => {
-                            let temp = value.department;
-                            value.department = this.departments.map(x => {
-                                if (x.value === temp) return x.text;
-                            });
+                            value.department = value.department.name;
                             return value;
                         });
                     });
@@ -251,7 +285,7 @@
                     confirmButtonText: "¡Si, borrar!"
                 }).then(result => {
                     if (result.value) {
-                        $axios.delete(`${EMPLOYEE_URI}/${id}`)
+                        $axios.delete(`${EMPLOYEE_URI}/${id}/`)
                             .then(response => {
                                 if (response.status === 200 || response.status === 204) {
                                     this.employees.splice(index, 1);
@@ -284,32 +318,32 @@
             },
 
             save() {
-                if (this.valid) {
-                    if (this.editedIndex > -1) {
-                        const {id} = this.editedItem;
-                        $axios.put(`${EMPLOYEE_URI}/${id}/`, this.editedItem)
-                            .then(response => {
-                                if (response.status === 201 || response.status === 200) {
-                                    this.getItems();
-                                }
-                            })
-                            .catch(err => console.log(err));
-                    } else {
-                        $axios.post(`${EMPLOYEE_URI}/`, this.editedItem)
-                            .then(response => {
-                                if (response.status === 201) {
-                                    this.employees.push(this.editedItem);
-                                    this.getItems();
-                                }
-                            })
-                            .catch(err => console.log(err));
-                    }
-                    this.close();
+                console.log(this.editedIndex);
+                if (this.editedIndex > -1) {
+                    const {id} = this.editedItem;
+                    $axios.put(`${EMPLOYEE_URI}/${id}/`, this.editedItem)
+                        .then(response => {
+                            if (response.status === 201 || response.status === 200) {
+                                this.getItems();
+                            }
+                        })
+                        .catch(err => console.log(err));
                 } else {
-                    this.$refs.form.validate();
+                    console.log(this.editedItem);
+                    $axios.post(`${EMPLOYEE_URI}/`, this.editedItem)
+                        .then(response => {
+                            if (response.status === 201) {
+                                this.employees.push(this.editedItem);
+                                this.getItems();
+                            }
+                        })
+                        .catch(err => console.log(err));
                 }
+                this.close();
+            },
 
-
+            validateForm() {
+                this.$refs.form.validate();
             }
         }
     };
