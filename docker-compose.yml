@@ -1,12 +1,15 @@
 version: '3.1'
-services:
 
+volumes:
+  production_postgres_data: {}
+
+services:
   django:
     build:
       context: .
       dockerfile: ./compose/django/Dockerfile
     depends_on:
-      - postgresDB
+      - postgres
     volumes:
       - .:/app
     env_file:
@@ -15,13 +18,14 @@ services:
       - "8000:8000"
     command: /start
 
-  postgresDB:
-    image: postgres
+  postgres:
+    build:
+      context: .
+      dockerfile: ./compose/postgres/Dockerfile
     volumes:
-      - "/var/lib/postgresql/data"
+      - production_postgres_data:/var/lib/postgresql/data
     env_file:
       - ./.envs/local/.postgres
     ports:
       - "5432:5432"
-    container_name: postgresDB
 
