@@ -7,6 +7,18 @@
             <v-spacer></v-spacer>
         </v-toolbar>
         <v-app id="inspire">
+            <v-alert
+                    max-width="50%"
+                    class="mx-auto"
+                    prominent
+                    type="success"
+                    text
+                    transition="scale-transition"
+                    dismissible
+                    elevation="2"
+                    :value="successAlert">
+                {{successMessage}}
+            </v-alert>
             <v-card class="mt-10 mr-10 ml-10">
                 <v-card-title>
                     <span>Empleados</span>
@@ -42,27 +54,37 @@
 
                                     <v-card-text>
                                         <v-container>
+                                            <v-alert
+                                                    prominent
+                                                    type="error"
+                                                    icon="warning"
+                                                    transition="scale-transition"
+                                                    dismissible
+                                                    :value="alert">
+                                                {{errorSummary}}
+                                            </v-alert>
                                             <v-form
                                                     ref="form"
                                                     v-model="valid"
-                                                    @submit.prevent="save"
-                                                    :lazy-validation="lazy">
+                                                    lazy-validation>
                                                 <v-col cols="11" class="mx-auto">
-                                                    <v-text-field v-model="editedItem.first_name"
-                                                                  required
-                                                                  :counter="50"
-                                                                  :rules="formRules.firstNameRules"
-                                                                  label="Nombres">
+                                                    <v-text-field
+                                                            v-model="editedItem.first_name"
+                                                            :counter="50"
+                                                            :rules="formRules.firstNameRules"
+                                                            label="Nombres">
                                                     </v-text-field>
-                                                    <v-text-field v-model="editedItem.last_name"
-                                                                  :counter="50"
-                                                                  :rules="formRules.lastNameRules"
-                                                                  label="Apellidos">
+                                                    <v-text-field
+                                                            v-model="editedItem.last_name"
+                                                            :counter="50"
+                                                            :rules="formRules.lastNameRules"
+                                                            label="Apellidos">
                                                     </v-text-field>
-                                                    <v-text-field v-model="editedItem.document_number"
-                                                                  :counter="14"
-                                                                  :rules="formRules.documentNumberRules"
-                                                                  label="Número de documento">
+                                                    <v-text-field
+                                                            v-model="editedItem.document_number"
+                                                            :counter="14"
+                                                            :rules="formRules.documentNumberRules"
+                                                            label="Número de documento">
                                                     </v-text-field>
                                                     <v-menu
                                                             v-model="fromDateMenu"
@@ -71,8 +93,7 @@
                                                             transition="scale-transition"
                                                             offset-y
                                                             max-width="290px"
-                                                            min-width="290px"
-                                                    >
+                                                            min-width="290px">
                                                         <template v-slot:activator="{ on }">
                                                             <v-text-field
                                                                     label="Fecha de nacimiento"
@@ -93,37 +114,41 @@
                                                                 :max="maxDate"
                                                         ></v-date-picker>
                                                     </v-menu>
-                                                    <v-text-field v-model="editedItem.mobile_number"
-                                                                  prepend-inner-icon="phone"
-                                                                  :counter="10"
-                                                                  :rules="formRules.phoneNumberRules"
-                                                                  label="Número telefónico"></v-text-field>
-                                                    <v-text-field v-model="editedItem.email"
-                                                                  :rules="formRules.emailRules"
-                                                                  label="Correo electrónico"></v-text-field>
+                                                    <v-text-field
+                                                            v-model="editedItem.mobile_number"
+                                                            prepend-inner-icon="phone"
+                                                            :counter="10"
+                                                            :rules="formRules.phoneNumberRules"
+                                                            label="Número telefónico">
+                                                    </v-text-field>
+                                                    <v-text-field
+                                                            v-model="editedItem.email"
+                                                            :rules="formRules.emailRules"
+                                                            label="Correo electrónico">
+                                                    </v-text-field>
                                                     <v-combobox
                                                             v-model="editedItem.gender"
                                                             :items="genders"
                                                             :rules="formRules.genderRules"
-                                                            label="Seleccione género"
-                                                    ></v-combobox>
-                                                    <v-combobox
+                                                            label="Seleccione género">
+                                                    </v-combobox>
+                                                    <v-select
                                                             v-model="editedItem.department"
                                                             :items="departments"
                                                             :rules="formRules.departmentRules"
-                                                            label="Seleccione Departamento"
-                                                    ></v-combobox>
+                                                            label="Seleccione Departamento">
+                                                    </v-select>
                                                 </v-col>
-                                                <v-card-actions>
-                                                    <v-spacer></v-spacer>
-                                                    <v-btn color="red darken-1" text @click="close">Cancelar</v-btn>
-                                                    <v-btn color="green darken-1" text type="submit" :disabled="!valid">
-                                                        Guardar
-                                                    </v-btn>
-                                                </v-card-actions>
                                             </v-form>
                                         </v-container>
                                     </v-card-text>
+                                    <v-card-actions>
+                                        <v-spacer></v-spacer>
+                                        <v-btn color="red darken-1" text @click="close">Cancelar</v-btn>
+                                        <v-btn color="green darken-1" text @click="save" :disabled="!valid">
+                                            Guardar
+                                        </v-btn>
+                                    </v-card-actions>
                                 </v-card>
                             </v-dialog>
                         </v-toolbar>
@@ -137,6 +162,12 @@
                     </template>
                 </v-data-table>
             </v-card>
+            <template>
+                <v-footer absolute  class="font-weight-medium" height="80px">
+                    <v-spacer></v-spacer>
+                    <div>By: Cristhian Forero &copy; {{ new Date().getFullYear() }}</div>
+                </v-footer>
+            </template>
         </v-app>
     </div>
 </template>
@@ -154,7 +185,8 @@
     export default {
         data: () => ({
             valid: true,
-            lazy: true,
+            alert: false,
+            successAlert: false,
             search: '',
             fromDateMenu: false,
             fromDateVal: null,
@@ -179,22 +211,24 @@
                 first_name: "",
                 last_name: "",
                 document_number: "",
-                birth_date: null,
+                birth_date: "",
                 mobile_number: "",
                 email: "",
-                gender: null,
+                gender: "",
                 department: null
             },
             defaultItem: {
                 first_name: "",
                 last_name: "",
                 document_number: "",
-                birth_date: null,
+                birth_date: "",
                 mobile_number: "",
                 email: "",
-                gender: null,
+                gender: "",
                 department: null,
             },
+            errorMessage: "",
+            successMessage: "",
             departments: [],
             formRules: {
                 firstNameRules: [
@@ -236,6 +270,9 @@
             },
             formTitle() {
                 return this.editedIndex === -1 ? "Nuevo Empleado" : "Editar Empleado";
+            },
+            errorSummary() {
+                return this.errorMessage;
             }
         },
 
@@ -262,11 +299,15 @@
                             value.department = value.department.name;
                             return value;
                         });
-                    });
+                    })
+                    .catch(e => this.showErrorAlert(e))
             },
 
             editItem(item) {
                 this.editedIndex = this.employees.indexOf(item);
+                let edited = this.employees[this.editedIndex];
+                item.department = this.departments.filter(val => val.text === edited.department)[0].value;
+                this.getItems();
                 this.editedItem = Object.assign({}, item);
                 this.dialog = true;
             },
@@ -287,13 +328,13 @@
                     if (result.value) {
                         $axios.delete(`${EMPLOYEE_URI}/${id}/`)
                             .then(response => {
-                                if (response.status === 200 || response.status === 204) {
+                                if (response.status === 200) {
                                     this.employees.splice(index, 1);
                                     this.getItems();
-                                    Swal.fire("¡Borrado!", "El empleado ha sido eliminado.", "success");
+                                    this.showSuccessAlert(response);
                                 }
                             })
-                            .catch(err => console.error(err));
+                            .catch(e => this.showErrorAlert(e))
                     }
                 });
             },
@@ -304,13 +345,15 @@
                         this.departments = response.data.map(val => {
                             return {text: val.name, value: val.id}
                         });
-                    });
+                    })
+                    .catch(e => this.showErrorAlert(e))
             },
 
             close() {
                 this.dialog = false;
                 this.$refs.form.reset();
                 this.$refs.form.resetValidation();
+                this.valid = false;
                 this.$nextTick(() => {
                     this.editedItem = Object.assign({}, this.defaultItem);
                     this.editedIndex = -1;
@@ -318,32 +361,64 @@
             },
 
             save() {
-                console.log(this.editedIndex);
-                if (this.editedIndex > -1) {
-                    const {id} = this.editedItem;
-                    $axios.put(`${EMPLOYEE_URI}/${id}/`, this.editedItem)
-                        .then(response => {
-                            if (response.status === 201 || response.status === 200) {
-                                this.getItems();
-                            }
-                        })
-                        .catch(err => console.log(err));
-                } else {
-                    console.log(this.editedItem);
-                    $axios.post(`${EMPLOYEE_URI}/`, this.editedItem)
-                        .then(response => {
-                            if (response.status === 201) {
-                                this.employees.push(this.editedItem);
-                                this.getItems();
-                            }
-                        })
-                        .catch(err => console.log(err));
+                if (this.isValidForm()) {
+                    if (this.editedIndex > -1) {
+                        const {id} = this.editedItem;
+                        $axios.put(`${EMPLOYEE_URI}/${id}/`, this.editedItem)
+                            .then(response => {
+                                if (response.status === 200) {
+                                    this.getItems();
+                                    this.close();
+                                    this.showSuccessAlert(response);
+                                }
+                            })
+                            .catch(err => console.log(err));
+                    } else {
+                        $axios.post(`${EMPLOYEE_URI}/`, this.editedItem)
+                            .then(response => {
+                                if (response.status === 201) {
+                                    this.employees.push(this.editedItem);
+                                    this.getItems();
+                                    this.close();
+                                    this.showSuccessAlert(response);
+                                }
+                            })
+                            .catch(e => this.showErrorAlert(e))
+                        ;
+                    }
                 }
-                this.close();
             },
 
-            validateForm() {
-                this.$refs.form.validate();
+            isValidForm() {
+                return this.$refs.form.validate();
+            },
+
+            showErrorAlert(e) {
+                const {error} = e.response.data;
+                this.alert = true;
+                this.errorMessage = error;
+                this.hideErrorAlert();
+            },
+
+            showSuccessAlert(response) {
+                const {msg} = response.data;
+                this.successAlert = true;
+                this.successMessage = msg;
+                this.hideSuccessAlert()
+            },
+
+            hideErrorAlert() {
+                setTimeout(() => {
+                    this.alert = false;
+                    this.errorMessage = "";
+                }, 3000);
+            },
+
+            hideSuccessAlert() {
+                setTimeout(() => {
+                    this.successAlert = false;
+                    this.successMessage = "";
+                }, 3500);
             }
         }
     };

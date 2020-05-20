@@ -156,5 +156,6 @@ REST_FRAMEWORK = {
     ],
     'DEFAULT_PARSER_CLASSES': [
         'rest_framework.parsers.JSONParser',
-    ]
+    ],
+    'EXCEPTION_HANDLER': 'rest_framework.views.exception_handler',
 }
