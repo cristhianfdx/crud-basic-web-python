@@ -24,7 +24,7 @@ SECRET_KEY = 'dc%upwr&d!r5mz-_rewy^yc_c!b22r+@_b=03mhf_wt&g9oy*d'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 # Application definition
 
@@ -43,6 +43,7 @@ LOCAL_APPS = [
 
 THIRD_PARTY_APPS = [
     'rest_framework',
+    'django_seed',
 ]
 
 INSTALLED_APPS = DJANGO_APPS + LOCAL_APPS + THIRD_PARTY_APPS
@@ -82,13 +83,23 @@ WSGI_APPLICATION = 'crud.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/3.0/ref/settings/#databases
 
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql',
+#         'NAME': 'dcc124qri95gkq',
+#         'USER': 'foqfsiwppdkqgm',
+#         'PASSWORD': '3f4431d6caa9014176bb46e2d8afabf03b4b25fccdb9697eb6c47ba99a23cbeb',
+#         'HOST': 'ec2-54-197-48-79.compute-1.amazonaws.com'
+#     }
+# }
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'dcc124qri95gkq',
-        'USER': 'foqfsiwppdkqgm',
-        'PASSWORD': '3f4431d6caa9014176bb46e2d8afabf03b4b25fccdb9697eb6c47ba99a23cbeb',
-        'HOST': 'ec2-54-197-48-79.compute-1.amazonaws.com'
+        'NAME': 'employees',
+        'USER': 'c3VwZXJ1c2Vy',
+        'PASSWORD': 'cGFzc3dvcmRzZWNyZXQ=',
+        'HOST': 'localhost'
     }
 }
 
@@ -145,5 +156,6 @@ REST_FRAMEWORK = {
     ],
     'DEFAULT_PARSER_CLASSES': [
         'rest_framework.parsers.JSONParser',
-    ]
+    ],
+    'EXCEPTION_HANDLER': 'rest_framework.views.exception_handler',
 }
