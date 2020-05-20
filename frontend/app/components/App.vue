@@ -7,19 +7,19 @@
             <v-spacer></v-spacer>
         </v-toolbar>
         <v-app id="inspire">
-            <v-alert
-                    max-width="50%"
-                    class="mx-auto"
-                    prominent
-                    type="success"
-                    text
-                    transition="scale-transition"
-                    dismissible
-                    elevation="2"
-                    :value="successAlert">
-                {{successMessage}}
-            </v-alert>
-            <v-card class="mt-10 mr-10 ml-10">
+            <div class="text-center">
+                <v-snackbar v-model="snackbar" :vertical="true" color="success" top="top">
+                    {{successMessage}}
+                    <v-btn
+                            dark
+                            text
+                            timeout="4000"
+                            @click="snackbar = false">
+                        Cerrar
+                    </v-btn>
+                </v-snackbar>
+            </div>
+            <v-card class="mt-10 ma-12">
                 <v-card-title>
                     <span>Empleados</span>
                     <v-spacer></v-spacer>
@@ -72,19 +72,19 @@
                                                             v-model="editedItem.first_name"
                                                             :counter="50"
                                                             :rules="formRules.firstNameRules"
-                                                            label="Nombres">
+                                                            label="Nombres*">
                                                     </v-text-field>
                                                     <v-text-field
                                                             v-model="editedItem.last_name"
                                                             :counter="50"
                                                             :rules="formRules.lastNameRules"
-                                                            label="Apellidos">
+                                                            label="Apellidos*">
                                                     </v-text-field>
                                                     <v-text-field
                                                             v-model="editedItem.document_number"
                                                             :counter="14"
                                                             :rules="formRules.documentNumberRules"
-                                                            label="Número de documento">
+                                                            label="Número de documento*">
                                                     </v-text-field>
                                                     <v-menu
                                                             v-model="fromDateMenu"
@@ -96,7 +96,7 @@
                                                             min-width="290px">
                                                         <template v-slot:activator="{ on }">
                                                             <v-text-field
-                                                                    label="Fecha de nacimiento"
+                                                                    label="Fecha de nacimiento*"
                                                                     prepend-inner-icon="event"
                                                                     :rules="formRules.birthDateRules"
                                                                     readonly
@@ -119,33 +119,34 @@
                                                             prepend-inner-icon="phone"
                                                             :counter="10"
                                                             :rules="formRules.phoneNumberRules"
-                                                            label="Número telefónico">
+                                                            label="Número telefónico*">
                                                     </v-text-field>
                                                     <v-text-field
                                                             v-model="editedItem.email"
                                                             :rules="formRules.emailRules"
-                                                            label="Correo electrónico">
+                                                            label="Correo electrónico*">
                                                     </v-text-field>
                                                     <v-combobox
                                                             v-model="editedItem.gender"
                                                             :items="genders"
                                                             :rules="formRules.genderRules"
-                                                            label="Seleccione género">
+                                                            label="Seleccione género*">
                                                     </v-combobox>
                                                     <v-select
                                                             v-model="editedItem.department"
                                                             :items="departments"
                                                             :rules="formRules.departmentRules"
-                                                            label="Seleccione Departamento">
+                                                            label="Seleccione Departamento*">
                                                     </v-select>
                                                 </v-col>
                                             </v-form>
                                         </v-container>
+                                        <small>*Campos requeridos</small>
                                     </v-card-text>
                                     <v-card-actions>
                                         <v-spacer></v-spacer>
-                                        <v-btn color="red darken-1" text @click="close">Cancelar</v-btn>
-                                        <v-btn color="green darken-1" text @click="save" :disabled="!valid">
+                                        <v-btn color="red darken-1" text @click="close">Cerrar</v-btn>
+                                        <v-btn color="light-green darken-1" text @click="save" :disabled="!valid">
                                             Guardar
                                         </v-btn>
                                     </v-card-actions>
@@ -163,7 +164,94 @@
                 </v-data-table>
             </v-card>
             <template>
-                <v-footer absolute  class="font-weight-medium" height="80px">
+                <v-row justify="center">
+                    <v-dialog v-model="departmentDialog" persistent max-width="600px">
+                        <template v-slot:activator="{ on }">
+                            <v-btn color="indigo darken-3" dark v-on="on">Administar Departamentos</v-btn>
+                        </template>
+                        <v-card>
+                            <v-card-title>
+                                <span class="headline">Administaci&oacute;n de Departamentos</span>
+                            </v-card-title>
+                            <v-card-text>
+                                <v-container>
+                                    <v-alert
+                                            prominent
+                                            type="error"
+                                            icon="warning"
+                                            transition="scale-transition"
+                                            dismissible
+                                            :value="depAlert">
+                                        {{errorSummary}}
+                                    </v-alert>
+                                    <v-autocomplete
+                                            v-model="selectedDepartments"
+                                            :disabled="isDeleting"
+                                            :items="items"
+                                            filled
+                                            chips
+                                            color="blue-grey lighten-2"
+                                            label="Seleccionar departamentos"
+                                            item-text="name"
+                                            item-value="name"
+                                            multiple>
+                                        <template v-slot:selection="data">
+                                            <v-chip
+                                                    v-bind="data.attrs"
+                                                    :input-value="data.selected"
+                                                    close
+                                                    @click="data.select"
+                                                    @click:close="remove(data.item)">
+                                                {{ data.item.name }}
+                                            </v-chip>
+                                        </template>
+                                        <template v-slot:item="data">
+                                            <template v-if="typeof data.item !== 'object'">
+                                                <v-list-item-content v-text="data.item"></v-list-item-content>
+                                            </template>
+                                            <template v-else>
+                                                <v-list-item-content>
+                                                    <v-list-item-title v-html="data.item.name"></v-list-item-title>
+                                                </v-list-item-content>
+                                            </template>
+                                        </template>
+                                        <template v-slot:no-data>
+                                            <span>No hay departamentos registrados.</span>
+                                        </template>
+                                    </v-autocomplete>
+                                    <v-card-subtitle class="text-center mt-3">
+                                        <span class="headline">Crear Departamento</span>
+                                    </v-card-subtitle>
+                                    <v-form
+                                            ref="formDep"
+                                            lazy-validation
+                                            v-model="frmValid">
+                                        <v-row>
+                                            <v-col cols="8" class="mx-auto">
+                                                <v-text-field
+                                                        label="Nombre*"
+                                                        v-model="departmentName"
+                                                        :rules="formRules.departmentNameRules"
+                                                        required>
+                                                </v-text-field>
+                                                <small>*Campo requerido</small>
+                                            </v-col>
+                                        </v-row>
+                                    </v-form>
+                                </v-container>
+                            </v-card-text>
+                            <v-card-actions>
+                                <v-spacer></v-spacer>
+                                <v-btn color="orange darken-4" text @click="departmentDialog = false">Cerrar</v-btn>
+                                <v-btn color="red darken-4" text @click="deleteDepartments">Borrar</v-btn>
+                                <v-btn color="green darken-1" text @click="saveDepartment">Crear</v-btn>
+                            </v-card-actions>
+                        </v-card>
+                    </v-dialog>
+                </v-row>
+            </template>
+            <template>
+                <v-footer absolute class="font-weight-medium" height="80px">
                     <v-spacer></v-spacer>
                     <div>By: Cristhian Forero &copy; {{ new Date().getFullYear() }}</div>
                 </v-footer>
@@ -184,15 +272,24 @@
 
     export default {
         data: () => ({
+            isDeleting: false,
+            departmentName: '',
+            loading: false,
             valid: true,
+            frmValid: true,
             alert: false,
-            successAlert: false,
+            depAlert: false,
+            snackbar: false,
             search: '',
+            selectedDepartments: [],
+            select: null,
+            items: [],
             fromDateMenu: false,
             fromDateVal: null,
             minDate: moment().subtract(50, 'y').format(DATE_FORMAT),
             maxDate: moment().format(DATE_FORMAT),
             dialog: false,
+            departmentDialog: false,
             genders: ['M', 'F', 'OTRO'],
             headers: [
                 {text: "Apellidos", value: "last_name", align: "start"},
@@ -230,6 +327,7 @@
             errorMessage: "",
             successMessage: "",
             departments: [],
+            departmentId: null,
             formRules: {
                 firstNameRules: [
                     v => !!v || 'Los Nombres son obligatorios.',
@@ -248,7 +346,7 @@
                 ],
                 phoneNumberRules: [
                     v => !!v || 'El Número telefónico es obligatorio',
-                    v => (v && v.length <= 10) || 'El Número telefónico  no puede tener más de 10 dígitos.',
+                    v => (v && v.length >= 7 && v.length <= 10) || 'El Número telefónico  debe tener entre 7 y 10 dígitos.',
                     v => /\d$/.test(v) || 'Solo se permiten números.'
                 ],
                 birthDateRules: [
@@ -260,7 +358,11 @@
                     v => /.+@.+\..+/.test(v) || 'Debe ingresar un correo electrónico válido.',
                 ],
                 genderRules: [v => !!v || 'El Género es obligatorio'],
-                departmentRules: [v => !!v || 'El Departamento es obligatorio']
+                departmentRules: [v => !!v || 'El Departamento es obligatorio'],
+                departmentNameRules: [
+                    v => !!v || 'El Nombre es obligatorio',
+                    v => /^[a-zA-Z0-9]*$/.test(v) || 'Solo puede contener carácteres alfanúmericos y sin espacios.'
+                ]
             }
         }),
 
@@ -279,6 +381,9 @@
         watch: {
             dialog(val) {
                 val || this.close();
+            },
+            departmentDialog(val) {
+                val || this.closeFormDep();
             }
         },
 
@@ -315,35 +420,31 @@
             deleteItem(item) {
                 const index = this.employees.indexOf(item);
                 const {id} = item;
+                this.showSweetAlert("employee", index, id);
+            },
 
-                Swal.fire({
-                    title: "¿Esta segur@?",
-                    text: "¡No podrás revertir esto!",
-                    icon: "warning",
-                    showCancelButton: true,
-                    confirmButtonColor: "#3085d6",
-                    cancelButtonColor: "#d33",
-                    confirmButtonText: "¡Si, borrar!"
-                }).then(result => {
-                    if (result.value) {
-                        $axios.delete(`${EMPLOYEE_URI}/${id}/`)
-                            .then(response => {
-                                if (response.status === 200) {
-                                    this.employees.splice(index, 1);
-                                    this.getItems();
-                                    this.showSuccessAlert(response);
-                                }
-                            })
-                            .catch(e => this.showErrorAlert(e))
-                    }
-                });
+            removeEmployee(params) {
+                $axios.delete(`${EMPLOYEE_URI}/${params[1]}/`)
+                    .then(response => {
+                        if (response.status === 200) {
+                            this.employees.splice(params[0], 1);
+                            this.getItems();
+                            this.showSuccessAlert(response);
+                        }
+                    })
+                    .catch(e => this.showErrorAlert(e));
             },
 
             getDepartments() {
                 $axios.get(DEPARTMENT_URI)
                     .then(response => {
-                        this.departments = response.data.map(val => {
+                        const {data} = response;
+                        this.departments = data.map(val => {
                             return {text: val.name, value: val.id}
+                        });
+
+                        this.items = data.map(val => {
+                            return {name: val.name}
                         });
                     })
                     .catch(e => this.showErrorAlert(e))
@@ -383,45 +484,139 @@
                                     this.showSuccessAlert(response);
                                 }
                             })
-                            .catch(e => this.showErrorAlert(e))
-                        ;
+                            .catch(e => this.showErrorAlert(e));
                     }
                 }
+            },
+
+            saveDepartment() {
+                if (this.$refs.formDep.validate()) {
+                    $axios.post(`${DEPARTMENT_URI}/`, {
+                        name: this.departmentName.toUpperCase()
+                    })
+                        .then(response => {
+                            if (response.status === 201) {
+                                this.getDepartments();
+                                this.closeFormDep();
+                                this.showSuccessAlert(response);
+                            }
+                        })
+                        .catch(e => this.showErrorAlert(e));
+                }
+            },
+
+            deleteDepartments() {
+                if (this.selectedDepartments.length === 0) {
+                    this.depAlert = true;
+                    this.errorMessage = "Se debe seleccionar por lo menos un departamento para poder borrar.";
+                    this.hideErrorAlert();
+                } else {
+                    this.showSweetAlert("");
+                }
+            },
+
+            removeDepartments() {
+                const departmentsToDelete = this.departments.map(value => {
+                    const temp = this.selectedDepartments.filter(sel => sel === value.text);
+                    const name = temp[0];
+                    if (name) return {id: value.value, name};
+                });
+
+                departmentsToDelete.forEach(dep => {
+                    if (dep) {
+                        const {id} = dep;
+                        $axios.delete(`${DEPARTMENT_URI}/${id}/`)
+                            .then(response => {
+                                if (response.status === 200) {
+                                    this.getDepartments();
+                                    this.closeFormDep();
+                                    this.showSuccessAlert(response);
+                                }
+                            })
+                            .catch(e => this.showErrorAlert(e));
+                    }
+                });
             },
 
             isValidForm() {
                 return this.$refs.form.validate();
             },
 
+            closeFormDep() {
+                this.$refs.formDep.reset();
+                this.$refs.formDep.resetValidation();
+                this.selectedDepartments = [];
+                this.departmentDialog = false;
+            },
+
             showErrorAlert(e) {
                 const {error} = e.response.data;
-                this.alert = true;
+                if (this.dialog) {
+                    this.alert = true;
+                }
+
+                if (this.departmentDialog) {
+                    this.depAlert = true;
+                }
+
                 this.errorMessage = error;
                 this.hideErrorAlert();
             },
 
             showSuccessAlert(response) {
                 const {msg} = response.data;
-                this.successAlert = true;
+                this.snackbar = true;
                 this.successMessage = msg;
                 this.hideSuccessAlert()
             },
 
             hideErrorAlert() {
                 setTimeout(() => {
-                    this.alert = false;
+                    if (this.dialog) {
+                        this.alert = false;
+                    }
+
+                    if (this.departmentDialog) {
+                        this.depAlert = false;
+                    }
                     this.errorMessage = "";
                 }, 3000);
             },
 
             hideSuccessAlert() {
                 setTimeout(() => {
-                    this.successAlert = false;
+                    this.snackbar = false;
                     this.successMessage = "";
                 }, 3500);
-            }
-        }
-    };
+            },
+
+            showSweetAlert(action, ...args) {
+                Swal.fire({
+                    title: "¿Esta segur@?",
+                    text: "¡No podrás revertir esto!",
+                    icon: "warning",
+                    showCancelButton: true,
+                    confirmButtonColor: "#3085d6",
+                    cancelButtonColor: "#d33",
+                    confirmButtonText: "¡Si, borrar!"
+                }).then(result => {
+                    if (result.value) {
+                        if (action === 'employee') {
+                            this.removeEmployee(args);
+                        } else {
+                            this.removeDepartments();
+                        }
+                    }
+                });
+            },
+
+            remove(item) {
+                const index = this.selectedDepartments.indexOf(item.name);
+                if (index >= 0) this.selectedDepartments.splice(index, 1)
+            },
+        },
+    }
+
 </script>
 
 <style>
