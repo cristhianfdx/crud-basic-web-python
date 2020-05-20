@@ -11,6 +11,9 @@ https://docs.djangoproject.com/en/3.0/ref/settings/
 """
 
 import os
+import environ
+
+env = environ.Env()
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -83,24 +86,9 @@ WSGI_APPLICATION = 'crud.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/3.0/ref/settings/#databases
 
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.postgresql',
-#         'NAME': 'dcc124qri95gkq',
-#         'USER': 'foqfsiwppdkqgm',
-#         'PASSWORD': '3f4431d6caa9014176bb46e2d8afabf03b4b25fccdb9697eb6c47ba99a23cbeb',
-#         'HOST': 'ec2-54-197-48-79.compute-1.amazonaws.com'
-#     }
-# }
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'employees',
-        'USER': 'c3VwZXJ1c2Vy',
-        'PASSWORD': 'cGFzc3dvcmRzZWNyZXQ=',
-        'HOST': 'localhost'
-    }
+    'default': env.db('DATABASE_URL'),
 }
 
 # Password validation

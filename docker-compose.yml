@@ -1,14 +1,27 @@
 version: '3.1'
 services:
+
+  django:
+    build:
+      context: .
+      dockerfile: ./compose/django/Dockerfile
+    depends_on:
+      - postgresDB
+    volumes:
+      - .:/app
+    env_file:
+      - ./.envs/local/.postgres
+    ports:
+      - "8000:8000"
+    command: /start
+
   postgresDB:
     image: postgres
     volumes:
       - "/var/lib/postgresql/data"
-      - "./config/db/init.sql:/docker-entrypoint-initdb.d/init.sql"
+    env_file:
+      - ./.envs/local/.postgres
     ports:
       - "5432:5432"
-    environment:
-      - POSTGRES_USER=c3VwZXJ1c2Vy
-      - POSTGRES_PASSWORD=cGFzc3dvcmRzZWNyZXQ=
     container_name: postgresDB
 

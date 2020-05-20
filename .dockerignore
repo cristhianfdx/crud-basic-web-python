@@ -1,0 +1,5 @@
+.idea
+.vscode
+.git
+frontend/node_modules
+venv
