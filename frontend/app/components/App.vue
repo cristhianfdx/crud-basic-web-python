@@ -13,7 +13,7 @@
                     <v-btn
                             dark
                             text
-                            timeout="4000"
+                            timeout="3000"
                             @click="snackbar = false">
                         Cerrar
                     </v-btn>
@@ -97,7 +97,7 @@
                                                         <template v-slot:activator="{ on }">
                                                             <v-text-field
                                                                     label="Fecha de nacimiento*"
-                                                                    prepend-inner-icon="event"
+                                                                    append-icon="event"
                                                                     :rules="formRules.birthDateRules"
                                                                     readonly
                                                                     :value="editedItem.birth_date"
@@ -116,10 +116,10 @@
                                                     </v-menu>
                                                     <v-text-field
                                                             v-model="editedItem.mobile_number"
-                                                            prepend-inner-icon="phone"
+                                                            append-icon="phone"
                                                             :counter="10"
                                                             :rules="formRules.phoneNumberRules"
-                                                            label="Número telefónico*">
+                                                            label="Número de teléfono*">
                                                     </v-text-field>
                                                     <v-text-field
                                                             v-model="editedItem.email"
@@ -244,7 +244,10 @@
                                 <v-spacer></v-spacer>
                                 <v-btn color="orange darken-4" text @click="departmentDialog = false">Cerrar</v-btn>
                                 <v-btn color="red darken-4" text @click="deleteDepartments">Borrar</v-btn>
-                                <v-btn color="green darken-1" text @click="saveDepartment">Crear</v-btn>
+                                <v-btn color="green darken-1" text @click="saveDepartment"
+                                       :disabled="!frmValid">
+                                    Crear
+                                </v-btn>
                             </v-card-actions>
                         </v-card>
                     </v-dialog>
@@ -328,6 +331,7 @@
             successMessage: "",
             departments: [],
             departmentId: null,
+            timeout: null,
             formRules: {
                 firstNameRules: [
                     v => !!v || 'Los Nombres son obligatorios.',
@@ -427,8 +431,8 @@
                 $axios.delete(`${EMPLOYEE_URI}/${params[1]}/`)
                     .then(response => {
                         if (response.status === 200) {
-                            this.employees.splice(params[0], 1);
                             this.getItems();
+                            this.employees.splice(params[0], 1);
                             this.showSuccessAlert(response);
                         }
                     })
@@ -451,6 +455,8 @@
             },
 
             close() {
+                this.removeTimeout();
+                this.alert = false;
                 this.dialog = false;
                 this.$refs.form.reset();
                 this.$refs.form.resetValidation();
@@ -524,7 +530,7 @@
 
                 departmentsToDelete.forEach(dep => {
                     if (dep) {
-                        const {id} = dep;
+                        const {id, name} = dep;
                         $axios.delete(`${DEPARTMENT_URI}/${id}/`)
                             .then(response => {
                                 if (response.status === 200) {
@@ -533,7 +539,7 @@
                                     this.showSuccessAlert(response);
                                 }
                             })
-                            .catch(e => this.showErrorAlert(e));
+                            .catch(e => this.showErrorAlert(e, name));
                     }
                 });
             },
@@ -543,13 +549,15 @@
             },
 
             closeFormDep() {
+                this.removeTimeout();
+                this.depAlert = false;
+                this.frmValid = false;
                 this.$refs.formDep.reset();
                 this.$refs.formDep.resetValidation();
                 this.selectedDepartments = [];
-                this.departmentDialog = false;
             },
 
-            showErrorAlert(e) {
+            showErrorAlert(e, name = '') {
                 const {error} = e.response.data;
                 if (this.dialog) {
                     this.alert = true;
@@ -559,7 +567,7 @@
                     this.depAlert = true;
                 }
 
-                this.errorMessage = error;
+                this.errorMessage = name ? error.replace('{}', name) : error;
                 this.hideErrorAlert();
             },
 
@@ -571,7 +579,7 @@
             },
 
             hideErrorAlert() {
-                setTimeout(() => {
+                this.timeout = setTimeout(() => {
                     if (this.dialog) {
                         this.alert = false;
                     }
@@ -580,11 +588,11 @@
                         this.depAlert = false;
                     }
                     this.errorMessage = "";
-                }, 3000);
+                }, 3500);
             },
 
             hideSuccessAlert() {
-                setTimeout(() => {
+                this.timeout = setTimeout(() => {
                     this.snackbar = false;
                     this.successMessage = "";
                 }, 3500);
@@ -614,6 +622,11 @@
                 const index = this.selectedDepartments.indexOf(item.name);
                 if (index >= 0) this.selectedDepartments.splice(index, 1)
             },
+
+            removeTimeout() {
+                clearTimeout(this.timeout);
+                delete this.timeout;
+            }
         },
     }
 
