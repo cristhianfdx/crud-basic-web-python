@@ -21,7 +21,7 @@ class Employee(models.Model):
     mobile_number = models.CharField(max_length=40, unique=True)
     email = models.CharField(max_length=100, unique=True)
     gender = models.CharField(max_length=5)
-    department = models.ForeignKey(Department, on_delete=models.CASCADE)
+    department = models.ForeignKey(Department, on_delete=models.PROTECT)
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
 

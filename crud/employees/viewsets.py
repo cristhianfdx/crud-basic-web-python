@@ -7,6 +7,8 @@ from .models import Employee, Department
 from .serializers import EmployeeSerializer, DepartmentSerializer
 
 GENERIC_ERROR = 'GENERIC_ERROR'
+CANNOT_DELETE_MODEL_ERROR = 'Cannot delete some instances of model'
+
 EMAIL_DUPLICATE_ERROR = 'duplicate key value violates unique constraint "employee_email_key'
 DOCUMENT_NUMBER_DUPLICATE_ERROR = 'duplicate key value violates unique constraint "employee_document_number_key'
 DEPARTMENT_NAME_DUPLICATE_ERROR = 'duplicate key value violates unique constraint "department_name_key'
@@ -22,7 +24,8 @@ error_messages = {
     EMAIL_DUPLICATE_ERROR: 'El email ingresado ya se encuentra registrado.',
     DOCUMENT_NUMBER_DUPLICATE_ERROR: 'El número de documento ingresado ya se encuentra registrado.',
     GENERIC_ERROR: 'En este momento estamos presentando fallas, por favor intente más tarde.',
-    DEPARTMENT_NAME_DUPLICATE_ERROR: 'El nombre ingresado ya se encuentra registrado.'
+    DEPARTMENT_NAME_DUPLICATE_ERROR: 'El nombre ingresado ya se encuentra registrado.',
+    CANNOT_DELETE_MODEL_ERROR: 'No es posible eliminar el departamento {}. Se encontró un Empleado asociado'
 }
 
 
@@ -35,6 +38,9 @@ def get_error(error_code):
 
     if DEPARTMENT_NAME_DUPLICATE_ERROR in error_code:
         return error_messages.get(DEPARTMENT_NAME_DUPLICATE_ERROR)
+
+    if CANNOT_DELETE_MODEL_ERROR in error_code:
+        return error_messages.get(CANNOT_DELETE_MODEL_ERROR)
 
     return error_messages.get(GENERIC_ERROR)
 
