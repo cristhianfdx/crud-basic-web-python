@@ -1,9 +1,9 @@
-# CRUD WITH DJANGO, DJANGO REST FRAMEWORK AND VUE.JS
+## CRUD WITH DJANGO, DJANGO REST FRAMEWORK AND VUE.JS
 
 This project is a basic CRUD to register employees.
 
 
-## Run Program 
+### Run Program 
 
 - Install virtualenv: `pip install virtualenv`or `pip3 install virtualenv`
 - Enter app folder: `cd crud-basic-web-python`
