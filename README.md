@@ -1,4 +1,4 @@
-## CRUD WITH DJANGO, DJANGO REST FRAMEWORK AND VUE.JS
+## CRUD WITH DJANGO REST FRAMEWORK AND VUE.JS
 
 This project is a basic CRUD to register employees.
 
